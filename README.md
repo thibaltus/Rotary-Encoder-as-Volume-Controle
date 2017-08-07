@@ -32,33 +32,33 @@ First, make sure `amixer` is present and install it if it isn’t.
 which amixer || sudo apt-get install alsa-utils
 ```
 
-(If you’re not using the default analog audio output, consult @thijstriemstra’s comment below for some additional steps that you may or may not need to do.)
-
-Create a `bin` directory in your `pi` folder if it doesn't exist already, then drop the script below into it.
+Then drop the script into the `/usr/local/bin` folder:
 
 ```
-mkdir ~/bin
+nano /usr/local/bin/monitor-volume # (or however you do it)
 ```
 
-If it's not there yet, I'd also put `/home/pi/bin` somewhere in your `PATH`:
+If you want to make the xcript executable follow theses steps:
+
+put `/usr/local/bin` somewhere in your `PATH`:
 
 ```
 echo $PATH
-# don't see "/home/pi/bin" there? then run...
-echo "export PATH=$HOME/bin:$PATH" >> ~/.bashrc
+# don't see "/usr/local/bin" there? then run...
+echo "export PATH=/usr/local/bin:$PATH" >> ~/.bashrc
 # ...and restart your shell
 ```
 
-Then drop the script into the `/home/pi/bin` folder:
+Then, make python sript executable
 
 ```
-nano ~/bin/monitor-volume # (or however you do it)
-chmod +x ~/bin/monitor-volume
+chmod +x /usr/local/bin/monitor-volume
 ```
+
 
 You can run this script in the foreground just to test it out. Edit the script and temporarily change `DEBUG` to `True` so that you can see what's going on, then simply run it with `monitor-volume`. When you turn or press the knob, the script should report what it's doing. (Make sure that the volume _increases_ rather than _decreases_ when you turn it to the right, and if it doesn't, swap your A and B pins, or just swap their numbers in the script.)
 
-You should also play around with the constants defined at the top of the script. Naturally, if you picked other pins, you'll want to tell the script which GPIO pins to use. If your rotary encoder doesn't act like a button, or if you didn't hook up the button and don't care about it, you can set `GPIO_BUTTON` to `None`. But you may also want to change the minimum and maximum volumes (they're percentages, so they should be between 1 and 100) and the increment (how many percentage points the volume increases/decreases with each "click" of the knob).
+You should also play around with the constants defined at the top of the script. Naturally, if you picked other pins, you'll want to tell the script which GPIO pins to use. If your rotary encoder doesn't act like a button, or if you didn't hook up the button and don't care about it, you can set `GPIO_PM_BUTTON` to `None`. But you may also want to change the minimum and maximum volumes (they're percentages, so they should be between 1 and 100) and the increment (how many percentage points the volume increases/decreases with each "click" of the knob).
 
 If it's working the way you want, you can proceed to the next step: running `monitor-volume` automatically in the background whenever your Pi starts.
 
@@ -78,19 +78,3 @@ sudo systemctl start monitor-volume
 ```
 
 If that worked right, then you just told Raspbian to start up that script in the background on every boot (`enable`), and also to start it right now (`start`). At this point, and on every boot after this, your volume knob should Just Work.
-
-##  FAQ
-
-**This didn't work!**
-
-I got this working on an RPi3 running RetroPie 3.x, so all I can say is “works on my machine.” Some things to try:
-
-* You might not have Python 3; if `which python3` turns up nothing, try this:
-
-  ```
-  sudo apt-get install python3 python3-rpi.gpio
-  ```
-* I've heard that in earlier versions of Raspbian, the `pi` user isn't automatically allowed to access the GPIO pins, so you need to run scripts like this as root.  If you're running into permissions errors when you try to run the script from your shell, then that's your problem, most likely. There's no particular reason why you _shouldn't_ run this script as root, except on the general principle that you shouldn't really trust code that you didn't write. Make good choices and have backups.
-* I might have made a typo in the gist. Wouldn't be the first time.
-
-If you run into trouble, leave a comment and the internet can help you figure it out.
