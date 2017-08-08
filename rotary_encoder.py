@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-    The daemon responsible for changing the volume in response to a turn or press
+""" The daemon responsible for changing the volume in response to a turn or press
     of the volume knob.
     The volume knob is a rotary encoder. It turns infinitely in either direction.
     Turning it to the right will increase the volume; turning it to the left will
@@ -18,7 +17,7 @@ import sys
 import threading
 import signal
 import logging
-import Queue
+import queue
 from RPi import GPIO
 
 #===Settings====#
@@ -53,18 +52,15 @@ VOLUME_MIXER_CONTROL_ID = "Master"
 #[Debug]
 DEBUG = False
 
-logging.basicConfig(level=logging.DEBUG if DEBUG else logging.info)#,
-                    #format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
 
 class RotaryEncoder(object):
-    """
-        A class to decode mechanical rotary encoder pulses.
+    """ A class to decode mechanical rotary encoder pulses.
         Ported to RPi.GPIO from the pigpio sample here:
         http://abyz.co.uk/rpi/pigpio/examples.html
     """
     def __init__(self, gpioA, gpioB, callback=None, gpioButton=None, buttonCallback=None):
-        """
-            Instantiate the class. Takes three arguments: the two pin numbers to
+        """ Instantiate the class. Takes three arguments: the two pin numbers to
             which the rotary encoder is connected, plus a callback to run when the
             switch is turned.
             The callback receives one argument: a `delta` that will be either 1 or -1.
@@ -129,9 +125,7 @@ class RotaryEncoder(object):
 
 
 class Volume(object):
-    """
-        A wrapper API for interacting with the volume settings on the RPi.
-    """
+    """ A wrapper API for interacting with the volume settings on the RPi. """
 
     def __init__(self):
         self._min = VOLUME_MIN
@@ -143,21 +137,15 @@ class Volume(object):
         self._sync()
 
     def up(self):
-        """
-            Increases the volume by one increment.
-        """
+        """ Increases the volume by one increment. """
         return self._set_volume(self._volume + self._increment)
 
     def down(self):
-        """
-            Decreases the volume by one increment.
-        """
+        """ Decreases the volume by one increment. """
         return self._set_volume(self._volume - self._increment)
 
     def toggle(self):
-        """
-            Toggles muting between on and off.
-        """
+        """ Toggles muting between on and off. """
         if self._is_muted:
             cmd = "set '{}' unmute".format(VOLUME_MIXER_CONTROL_ID)
         else:
@@ -173,15 +161,11 @@ class Volume(object):
         return self._is_muted
 
     def get_volume(self):
-        """
-            Volume accessor
-        """
+        """ Volume accessor """
         return self._volume
 
     def _set_volume(self, val):
-        """
-            Sets volume to a specific value.
-        """
+        """ Sets volume to a specific value. """
         self._volume = self._constrain(val)
         self._sync(self._amixer("set '{}' unmute {}%".format(VOLUME_MIXER_CONTROL_ID, val)))
         return self._volume
@@ -195,8 +179,7 @@ class Volume(object):
         return val
 
     def _amixer(self, cmd):
-        """
-            Execute bash command to set up sound level on linux environement.
+        """ Execute bash command to set up sound level on linux environement.
             Return output of command
         """
         process = subprocess.Popen("amixer {}".format(cmd), shell=True, stdout=subprocess.PIPE)
@@ -207,8 +190,7 @@ class Volume(object):
         return process.stdout
 
     def _sync(self, output=None):
-        """
-            Read the output of `amixer` to get the system volume and mute state.
+        """ Read the output of `amixer` to get the system volume and mute state.
             This is designed not to do much work because it'll get called with every
             click of the knob in either direction, which is why we're doing simple
             string scanning and not regular expressions.
@@ -238,13 +220,12 @@ class Volume(object):
         self._volume = int(pct)
 
 class EventWrapper(object):
-    """
-        This class encapsulate event, fire by knob action, and put volume delta into FIFO queue. This
-        is necessary to ensure than every action is treat in order by main thread
+    """ This class encapsulate event, fire by knob action, and put volume delta into FIFO queue.
+        This is necessary to ensure than every action is treat in order by main thread
     """
     def __init__(self):
         self._volume = Volume()
-        self._queue = Queue.Queue()
+        self._queue = queue.Queue()
         self._event = threading.Event()
         self._encoder = RotaryEncoder(PM_GPIO_A, PM_GPIO_B, callback=self._on_turn,
                                       gpioButton=PM_GPIO_BUTTON,
@@ -271,15 +252,11 @@ class EventWrapper(object):
         sys.exit(0)
 
     def wait_event(self, seconde):
-        """
-            This method stop main thread until event fires
-        """
+        """ This method stop main thread until event fires """
         self._event.wait(seconde)
 
     def consume_queue(self):
-        """
-            This method loop on queue and increase or decrease volume according to delta value
-        """
+        """ This method loop on queue and increase or decrease volume according to delta value """
         while not self._queue.empty():
             if self._queue.get() == 1:
                 self._volume.up()
@@ -289,9 +266,7 @@ class EventWrapper(object):
                 self._volume.down()
 
     def clear_event(self):
-        """
-            Flush Events once queue is empty
-        """
+        """ Flush Events once queue is empty """
         self._event.clear()
 
 if __name__ == "__main__":
