@@ -266,6 +266,12 @@ class EventWrapper(object):
         self._event.clear()
 
 if __name__ == "__main__":
+
+    def on_exit(a, b):
+        logging.debug("Exiting...")
+        WRAPPER.__del__()
+        sys.exit(0)
+
     signal.signal(signal.SIGINT, on_exit)
     WRAPPER = EventWrapper()
     while True:
@@ -282,8 +288,3 @@ if __name__ == "__main__":
         WRAPPER.wait_event(1200)
         WRAPPER.consume_queue()
         WRAPPER.clear_event()
-
-def on_exit(a, b):
-    logging.debug("Exiting...")
-    WRAPPER.__del__()
-    sys.exit(0)
