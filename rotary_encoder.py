@@ -247,9 +247,9 @@ class EventWrapper(object):
         self._queue.put(delta)
         self._event.set()
 
-    def wait_event(self, seconde):
+    def wait_event(self):
         """ This method stop main thread until event fires """
-        self._event.wait(seconde)
+        self._event.wait()
 
     def consume_queue(self):
         """ This method loop on queue and increase or decrease volume according to delta value """
@@ -280,11 +280,6 @@ if __name__ == "__main__":
         # block quietly while waiting for the event to get flagged. When the knob
         # is turned we're able to respond immediately, but when it's not being
         # turned we're not looping at all.
-        #
-        # The 1200-second (20 minute) timeout is a hack; for some reason, if I
-        # don't specify a timeout, I'm unable to get the SIGINT handler above to
-        # work properly. But if there is a timeout set, even if it's a very long
-        # timeout, then Ctrl-C works as intended. No idea why.
-        WRAPPER.wait_event(1200)
+        WRAPPER.wait_event()
         WRAPPER.consume_queue()
         WRAPPER.clear_event()
