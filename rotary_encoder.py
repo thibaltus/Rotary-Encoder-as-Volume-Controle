@@ -20,7 +20,13 @@ import logging
 import queue
 from RPi import GPIO
 
+
 #===Settings====#
+
+#[Debug]
+# To disable console debug log, change LEVEL value with a highter level (logging.INFO for example)
+LEVEL = logging.DEBUG
+
 
 #[Potentiometer]
 # The two pins that the encoder uses (BCM numbering).
@@ -29,6 +35,7 @@ PM_GPIO_B = 11
 # The pin that the knob's button is hooked up to. If you have no button, set
 # this to None.
 PM_GPIO_BUTTON = 12
+
 
 #[Volume]
 # The minimum and maximum volumes, as percentages.
@@ -45,14 +52,9 @@ VOLUME_MAX = 96
 # to try.
 VOLUME_INCREMENT = 1
 
-
 # Control Id for amixer command. It depends of your linux configuration
 VOLUME_MIXER_CONTROL_ID = "Master"
 
-#[Debug]
-DEBUG = False
-
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
 
 class RotaryEncoder(object):
     """ A class to decode mechanical rotary encoder pulses.
@@ -272,6 +274,7 @@ if __name__ == "__main__":
         WRAPPER.__del__()
         sys.exit(0)
 
+    logging.basicConfig(level=LEVEL, format='%(asctime)s :: %(levelname)s  :: %(message)s')
     signal.signal(signal.SIGINT, on_exit)
     WRAPPER = EventWrapper()
     while True:
