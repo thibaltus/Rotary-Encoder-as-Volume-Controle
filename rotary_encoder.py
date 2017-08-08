@@ -267,7 +267,7 @@ class EventWrapper(object):
 
 if __name__ == "__main__":
 
-    def on_exit(a, b):
+    def on_exit(signum, frame):
         logging.debug("Exiting...")
         WRAPPER.__del__()
         sys.exit(0)
