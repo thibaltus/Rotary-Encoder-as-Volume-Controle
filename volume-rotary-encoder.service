@@ -1,0 +1,9 @@
+
+[Unit]
+Description=Volume knob monitor
+
+[Service]
+ExecStart=/usr/local/bin/volume-rotary-encoder
+
+[Install]
+WantedBy=multi-user.target
