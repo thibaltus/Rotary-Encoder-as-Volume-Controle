@@ -230,12 +230,13 @@ class EventWrapper(object):
         self._encoder = RotaryEncoder(PM_GPIO_A, PM_GPIO_B, callback=self._on_turn,
                                       gpioButton=PM_GPIO_BUTTON,
                                       buttonCallback=self._on_press_toggle)
-
-        signal.signal(signal.SIGINT, self._on_exit)
         logging.debug("Volume knob using pins %s (A) and %s (B)", PM_GPIO_A, PM_GPIO_B)
         if PM_GPIO_BUTTON != None:
             logging.debug("Volume mute button using pin %s", PM_GPIO_BUTTON)
         logging.debug("Initial volume: %s", self._volume.get_volume())
+
+    def __del__(self):
+        self._encoder.__del__()
 
     def _on_press_toggle(self):
         self._volume.toggle()
@@ -245,11 +246,6 @@ class EventWrapper(object):
     def _on_turn(self, delta):
         self._queue.put(delta)
         self._event.set()
-
-    def _on_exit(self):
-        logging.debug("Exiting...")
-        self._encoder.__del__()
-        sys.exit(0)
 
     def wait_event(self, seconde):
         """ This method stop main thread until event fires """
@@ -270,6 +266,7 @@ class EventWrapper(object):
         self._event.clear()
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, on_exit)
     WRAPPER = EventWrapper()
     while True:
         # This is the best way I could come up with to ensure that this script
@@ -285,3 +282,8 @@ if __name__ == "__main__":
         WRAPPER.wait_event(1200)
         WRAPPER.consume_queue()
         WRAPPER.clear_event()
+
+def on_exit(a, b):
+    logging.debug("Exiting...")
+    WRAPPER.__del__()
+    sys.exit(0)
