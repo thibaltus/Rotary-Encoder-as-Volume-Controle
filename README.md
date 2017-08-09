@@ -78,3 +78,13 @@ sudo systemctl start monitor-volume
 ```
 
 If that worked right, then you just told Raspbian to start up that script in the background on every boot (`enable`), and also to start it right now (`start`). At this point, and on every boot after this, your volume knob should Just Work.
+
+## Automate installation
+
+I made a bash script than automate both python script and systemd service install
+To run it just execute theses commands in the project directory:
+
+```
+sudo chmod +x deploy.sh
+sudo ./deploy.sh
+```

@@ -30,8 +30,8 @@ LEVEL = logging.DEBUG
 
 #[Potentiometer]
 # The two pins that the encoder uses (BCM numbering).
-PM_GPIO_A = 10
-PM_GPIO_B = 11
+PM_GPIO_A = 23
+PM_GPIO_B = 24
 # The pin that the knob's button is hooked up to. If you have no button, set
 # this to None.
 PM_GPIO_BUTTON = 12
@@ -44,16 +44,16 @@ PM_GPIO_BUTTON = 12
 # greater than zero because if your system is like mine, sound gets
 # completely inaudible _long_ before 0%. If you've got a hardware amp or
 # serious speakers or something, your results will vary.
-VOLUME_MIN = 60
+VOLUME_MIN = 10
 VOLUME_MAX = 96
 
 # The amount you want one click of the knob to increase or decrease the
 # volume. I don't think that non-integer values work here, but you're welcome
 # to try.
-VOLUME_INCREMENT = 1
+VOLUME_INCREMENT = 5
 
 # Control Id for amixer command. It depends of your linux configuration
-VOLUME_MIXER_CONTROL_ID = "Master"
+VOLUME_MIXER_CONTROL_ID = "Digital"
 
 
 class RotaryEncoder(object):
@@ -169,7 +169,7 @@ class Volume(object):
     def _set_volume(self, val):
         """ Sets volume to a specific value. """
         self._volume = self._constrain(val)
-        self._sync(self._amixer("set '{}' unmute {}%".format(VOLUME_MIXER_CONTROL_ID, val)))
+        self._sync(self._amixer("set '{}' unmute {}%".format(VOLUME_MIXER_CONTROL_ID, self._volume)))
         return self._volume
 
     # Ensures the volume value is between our minimum and maximum.
@@ -220,6 +220,8 @@ class Volume(object):
         pct = last[index_1:index_2]
 
         self._volume = int(pct)
+        logging.debug("Volume is now at %s", self._volume)
+
 
 class EventWrapper(object):
     """ This class encapsulate event, fire by knob action, and put volume delta into FIFO queue.
